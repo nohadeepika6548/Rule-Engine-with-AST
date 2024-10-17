@@ -46,3 +46,27 @@ class Node:
             # Add other operators as needed...
 
         return False
+
+Example Usage
+Constructing Rules: You can dynamically build an AST using the Node class.
+
+# Example rule: (age > 18 AND income > 30000) OR (department == "HR")
+age_rule = Node("operand", value=("age", ">", 18))
+income_rule = Node("operand", value=("income", ">", 30000))
+and_rule = Node("operator", value="AND", left=age_rule, right=income_rule)
+
+department_rule = Node("operand", value=("department", "==", "HR"))
+final_rule = Node("operator", value="OR", left=and_rule, right=department_rule)
+
+
+
+Evaluating Rules: Pass user attributes to the evaluate method.
+
+user_attributes = {
+    "age": 20,
+    "income": 40000,
+    "department": "IT"
+}
+
+eligibility = final_rule.evaluate(user_attributes)
+print("User is eligible:", eligibility)  # Output: User is eligible: True
