@@ -1,0 +1,124 @@
+Database Schema using MySQL
+1. Rules Table
+Purpose: Store the rules represented as ASTs.
+CREATE TABLE rules (
+    rule_id INT AUTO_INCREMENT PRIMARY KEY,
+    rule_name VARCHAR(255) NOT NULL,
+    ast JSON NOT NULL,           -- Store the AST in JSON format
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+Sample Entry:
+{
+    "rule_id": 1,
+    "rule_name": "Age and Department Rule",
+    "ast": {
+        "type": "operator",
+        "value": "AND",
+        "left": {
+            "type": "operator",
+            "value": "OR",
+            "left": {
+                "type": "operator",
+                "value": "AND",
+                "left": {
+                    "type": "operand",
+                    "value": "age",
+                    "condition": ">",
+                    "compare_value": 30
+                },
+                "right": {
+                    "type": "operand",
+                    "value": "department",
+                    "condition": "=",
+                    "compare_value": "Sales"
+                }
+            },
+            "right": {
+                "type": "operator",
+                "value": "AND",
+                "left": {
+                    "type": "operand",
+                    "value": "age",
+                    "condition": "<",
+                    "compare_value": 25
+                },
+                "right": {
+                    "type": "operand",
+                    "value": "department",
+                    "condition": "=",
+                    "compare_value": "Marketing"
+                }
+            }
+        },
+        "right": {
+            "type": "operator",
+            "value": "OR",
+            "left": {
+                "type": "operand",
+                "value": "salary",
+                "condition": ">",
+                "compare_value": 50000
+            },
+            "right": {
+                "type": "operand",
+                "value": "experience",
+                "condition": ">",
+                "compare_value": 5
+            }
+        }
+    },
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+}
+
+
+2.Users Table
+Purpose: Store user attributes for eligibility checking.
+CREATE TABLE users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    age INT NOT NULL,
+    department VARCHAR(255) NOT NULL,
+    salary DECIMAL(10, 2) NOT NULL,
+    experience INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+Sample Entry
+{
+    "user_id": 1,
+    "name": "John Doe",
+    "age": 32,
+    "department": "Sales",
+    "salary": 60000,
+    "experience": 6,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+}
+
+3. Evaluations Table
+Purpose: Store results of rule evaluations for each user.
+CREATE TABLE evaluations (
+    evaluation_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    rule_id INT,
+    is_eligible BOOLEAN NOT NULL,
+    evaluated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    FOREIGN KEY (rule_id) REFERENCES rules(rule_id)
+);
+Sample Entry:
+{
+    "evaluation_id": 1,
+    "user_id": 1,
+    "rule_id": 1,
+    "is_eligible": true,
+    "evaluated_at": "2024-01-02T00:00:00Z"
+}
+
+
+Summary:
+Rules Table: Holds rules in a flexible JSON format, allowing dynamic representation of ASTs.
+Users Table: Contains user information necessary for rule evaluation.
+Evaluations Table: Tracks the results of evaluations to maintain historical data
