@@ -1,0 +1,48 @@
+Data Structure for AST
+We’ll define a Node class to represent the AST structure. This will allow us to create, modify, and evaluate rules dynamically. 
+class Node:
+    def __init__(self, node_type, value=None, left=None, right=None):
+        """
+        Initialize a node in the AST.
+        
+        :param node_type: str, type of the node ("operator" or "operand")
+        :param value: optional, value for operand nodes (e.g., threshold for comparison)
+        :param left: Node, reference to the left child
+        :param right: Node, reference to the right child
+        """
+        self.type = node_type  # "operator" or "operand"
+        self.value = value      # Optional value for operand nodes
+        self.left = left        # Reference to left child (Node)
+        self.right = right      # Reference to right child (Node)
+
+    def evaluate(self, user_attributes):
+        """
+        Evaluate the AST against user attributes.
+        
+        :param user_attributes: dict, user attributes (e.g., age, department, income)
+        :return: bool, result of evaluation
+        """
+        if self.type == "operand":
+            # Example comparison: value could be a tuple (attribute, comparison, threshold)
+            attribute, comparison, threshold = self.value
+            user_value = user_attributes.get(attribute)
+
+            if comparison == "==":
+                return user_value == threshold
+            elif comparison == ">":
+                return user_value > threshold
+            elif comparison == "<":
+                return user_value < threshold
+            # Add other comparisons as needed...
+
+        elif self.type == "operator":
+            left_eval = self.left.evaluate(user_attributes) if self.left else False
+            right_eval = self.right.evaluate(user_attributes) if self.right else False
+            
+            if self.value == "AND":
+                return left_eval and right_eval
+            elif self.value == "OR":
+                return left_eval or right_eval
+            # Add other operators as needed...
+
+        return False
