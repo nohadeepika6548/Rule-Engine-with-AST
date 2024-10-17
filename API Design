@@ -1,0 +1,111 @@
+API Functions
+create_rule(rule_string)
+
+Purpose: Convert a rule string into an AST represented by Node objects.
+Input: A string (e.g., "age > 30 AND department = 'Sales'").
+Output: A Node object representing the AST.
+combine_rules(rules)
+
+Purpose: Combine multiple rule strings into a single AST.
+Input: A list of rule strings.
+Output: A Node object representing the combined AST.
+evaluate_rule(ast, data)
+
+Purpose: Evaluate the AST against a set of user attributes.
+Input: An AST (Node) and a dictionary of user attributes.
+Output: A boolean indicating if the user is eligible based on the rules.
+
+import json
+import re
+
+class Node:
+    def __init__(self, type, value=None, left=None, right=None):
+        self.type = type  # "operator" or "operand"
+        self.value = value
+        self.left = left  # Reference to left child
+        self.right = right  # Reference to right child
+
+def create_rule(rule_string):
+    # Simple parser to convert rule string into AST
+    tokens = re.split(r'(\s+AND\s+|\s+OR\s+)', rule_string)
+    stack = []
+    for token in tokens:
+        token = token.strip()
+        if not token:
+            continue
+        if token in ("AND", "OR"):
+            right = stack.pop()
+            left = stack.pop()
+            stack.append(Node("operator", token, left, right))
+        else:
+            match = re.match(r"(\w+)\s*([<>=!]+)\s*(['\"]?)(.+?)\3?", token)
+            if match:
+                attr, operator, _, value = match.groups()
+                stack.append(Node("operand", {"attribute": attr, "operator": operator, "value": value}))
+            else:
+                raise ValueError(f"Invalid rule format: {token}")
+    return stack[0]  # Return root node
+
+def combine_rules(rules):
+    # Simple strategy: combine using OR for all rules
+    if not rules:
+        return None
+    root = Node("operator", "OR")
+    root.left = create_rule(rules[0])  # Base case
+    for rule in rules[1:]:
+        new_rule = create_rule(rule)
+        root.right = new_rule  # You may want to implement a more complex combination strategy
+        root = Node("operator", "OR", root, new_rule)  # Nesting for demonstration
+    return root
+
+def evaluate_rule(ast, data):
+    if ast.type == "operator":
+        left_result = evaluate_rule(ast.left, data)
+        right_result = evaluate_rule(ast.right, data)
+        return left_result if ast.value == "AND" else left_result or right_result
+    elif ast.type == "operand":
+        attr = ast.value["attribute"]
+        operator = ast.value["operator"]
+        value = ast.value["value"]
+        if attr in data:
+            if operator == "=":
+                return data[attr] == value.strip("'\"")
+            elif operator == ">":
+                return data[attr] > float(value)
+            elif operator == "<":
+                return data[attr] < float(value)
+            # Add more operators as needed
+    return False
+
+
+Test Cases
+Creating Individual Rules
+
+rule1 = create_rule("((age > 30 AND department = 'Sales') OR (age < 25 AND department = 'Marketing'))")
+rule2 = create_rule("((age > 30 AND department = 'Marketing'))")
+
+Combining Rules
+
+combined_rule = combine_rules([
+    "((age > 30 AND department = 'Sales') OR (age < 25 AND department = 'Marketing'))",
+    "((age > 30 AND department = 'Marketing'))"
+])
+
+Evaluating Rules
+
+user_data = {"age": 32, "department": "Sales", "salary": 60000, "experience": 6}
+is_eligible = evaluate_rule(combined_rule, user_data)
+print(is_eligible)  # Output: True or False based on the evaluation
+
+Combining Additional Rules
+
+additional_rule = create_rule("salary > 50000")
+combined_rule = combine_rules([
+    "((age > 30 AND department = 'Sales'))",
+    "salary > 50000"
+])
+
+
+
+
+
