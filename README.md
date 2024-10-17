@@ -113,5 +113,3 @@
 
 #### 9. **Conclusion**
    - This rule engine application will provide a flexible, efficient way to manage and evaluate user eligibility based on dynamic rules. By using an AST, the system can easily modify, combine, and evaluate rules, making it scalable for future enhancements. 
-
-This outline serves as a comprehensive guide to developing your Rule Engine application, ensuring a structured approach to design and implementation.
